@@ -5,6 +5,8 @@ from sklearn.metrics import r2_score
 from linear_data import generate_linear_data
 from itertools import combinations 
 import math
+import plotly.graph_objects as go
+from plotly.subplots import make_subplots
 
 class StandardizedLinearRegression:
     def __init__(self, X, y, beta):
@@ -140,26 +142,90 @@ def nCr(n,r):
 N=1500
 n=10
 X,y,beta=generate_linear_data(N,n,n_rel=-1, data_rel_var=2.0 ,data_irrel_var=5.0,\
-                                        noise_var=1.0,standardized=True,correlated=True)
+                                        noise_var=5.0,standardized=True,correlated=True)
 
 SLR = StandardizedLinearRegression(X,y,beta)
 beta_estim = SLR.solve_linear_regression()
 r2_prob = SLR.r2()
 net_effects=SLR.net_effect()
 
+
+fig = make_subplots(rows=2, cols=1,
+        shared_xaxes=True,
+        vertical_spacing = 0.05,
+        subplot_titles=("Net Effects", "Predictor Estimated Coefficients"))
+
+fig.add_trace(go.Scatter(x=np.arange(n), y=net_effects, mode='lines+markers',
+                        name='NEF'), row=1, col=1)
+
+fig.add_trace(go.Scatter(x=np.arange(n), y=beta_estim,
+                    mode='lines+markers',
+                    name='LS Coeff'), row=2, col=1)
+fig.update_layout(
+    title={
+        'text': "R2 = " + str(r2_prob),
+    },
+    height=950,
+    font=dict(
+        family="Courier New, monospace",
+        size=18,
+        color="#000000"
+    )
+)
+for i in fig['layout']['annotations']:
+    i['font'] = dict(size=23,color='#000000')
+
+fig.show()
+# fig.write_html("/home/tlokeshkumar/Documents/IITM/devlopr-jekyll/_includes/_plots/neteffects/netEffectsCoeff.html", include_plotlyjs="cdn")
+
+
 print("Max Combinations ", nCr(n, n//2))
 SV=[]
 for i in range(n):
     SV.append(calculate_SV_j(X,y,i,SLR))
-plt.plot(SV, label='INEF')
-plt.plot(net_effects, label='NEF')
-plt.legend(loc='best')
-plt.show()
+# plt.plot(SV, label='INEF')
+# plt.plot(net_effects, label='NEF')
+# plt.legend(loc='best')
+# plt.show()
 print(SV)
 print(net_effects)
 
 print('r2 ', r2_prob)
 print('r2_sv ', np.sum(SV) )
+
+fig = make_subplots(rows=2, cols=1,
+        shared_xaxes=True,
+        vertical_spacing = 0.05,
+        subplot_titles=("Net Effects & Incremental Net Effects (Shapely Values)", "Predictor Estimated Coefficients"))
+
+fig.add_trace(go.Scatter(x=np.arange(n), y=net_effects, mode='lines+markers',
+                        name='NEF'), row=1, col=1)
+
+fig.add_trace(go.Scatter(x=np.arange(n), y=SV,
+                    mode='lines+markers',
+                    name='Shapley Values'), row=1, col=1)
+
+fig.add_trace(go.Scatter(x=np.arange(n), y=beta_estim,
+                    mode='lines+markers',
+                    name='LS Coeff'), row=2, col=1)
+fig.update_layout(
+    title={
+        'text': "R2 = " + str(r2_prob),
+    },
+    height=950,
+    font=dict(
+        family="Courier New, monospace",
+        size=18,
+        color="#000000"
+    )
+)
+for i in fig['layout']['annotations']:
+    i['font'] = dict(size=23,color='#000000')
+
+fig.show()
+fig.write_html("/home/tlokeshkumar/Documents/IITM/devlopr-jekyll/_includes/_plots/neteffects/netEffectsSV.html", include_plotlyjs="cdn")
+# fig.write_html("netEffectsCoeffCorrel.html", include_plotlyjs="cdn")
+
 # inc_r_2 = beta_estim**2 *(1-r2_n_self)  #U_j
 # # print(inc_r_2+r2_y_self)
 # R2_inc = np.mean(inc_r_2+r2_y_self)

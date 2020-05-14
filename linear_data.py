@@ -22,8 +22,8 @@ def generate_linear_data(N, n, n_rel=-1, data_rel_var=1.0 ,data_irrel_var=1.0, n
         beta_irrel = np.zeros(n-n_rel)
         beta=np.concatenate((beta,beta_irrel), axis=0)
     if correlated:
-        rvs = stats.poisson(25, loc=10).rvs
-        rs = random_sparse(n, n, density=0.7, data_rvs=rvs)
+        rvs = stats.poisson(30, loc=10).rvs
+        rs = random_sparse(n, n, density=0.1, data_rvs=rvs)
         # rs = np.random.binomial(1,0.1,size=(n,n)).astype('int')
         rs+=np.eye(n).astype('int')
         print(rs)
